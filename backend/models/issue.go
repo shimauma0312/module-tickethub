@@ -4,30 +4,19 @@ import (
 	"time"
 )
 
-// IssueStatus はチケットの状態を表す型
-type IssueStatus string
-
-const (
-	// OpenIssue は未解決の課題を表します
-	OpenIssue IssueStatus = "open"
-	// ClosedIssue は解決済みの課題を表します
-	ClosedIssue IssueStatus = "closed"
-)
-
 // Issue は課題チケットを表す構造体
 type Issue struct {
-	ID          int64       `json:"id"`
-	Title       string      `json:"title"`
-	Body        string      `json:"body"`
-	Status      IssueStatus `json:"status"`
-	Labels      []string    `json:"labels"`
-	AssigneeID  int64       `json:"assignee_id"`
-	CreatorID   int64       `json:"creator_id"`
-	CreatedAt   time.Time   `json:"created_at"`
-	UpdatedAt   time.Time   `json:"updated_at"`
-	IsDraft     bool        `json:"is_draft"`
-	MilestoneID int64       `json:"milestone_id,omitempty"`
-	ClosedAt    *time.Time  `json:"closed_at,omitempty"`
+	ID          int64     `json:"id"`
+	Title       string    `json:"title"`
+	Body        string    `json:"body"`
+	Status      string    `json:"status"`
+	Labels      []string  `json:"labels"`
+	AssigneeID  int64     `json:"assignee_id"`
+	CreatorID   int64     `json:"creator_id"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+	IsDraft     bool      `json:"is_draft"`
+	MilestoneID int64     `json:"milestone_id,omitempty"`
 }
 
 // NewIssue は新しいIssueインスタンスを作成する
@@ -36,7 +25,7 @@ func NewIssue(title, body string, creatorID int64) *Issue {
 	return &Issue{
 		Title:     title,
 		Body:      body,
-		Status:    OpenIssue,
+		Status:    "open",
 		CreatorID: creatorID,
 		CreatedAt: now,
 		UpdatedAt: now,
@@ -52,16 +41,13 @@ func (i *Issue) IsValid() bool {
 
 // Close はIssueをクローズ状態に設定する
 func (i *Issue) Close() {
-	i.Status = ClosedIssue
-	now := time.Now()
-	i.ClosedAt = &now
-	i.UpdatedAt = now
+	i.Status = "closed"
+	i.UpdatedAt = time.Now()
 }
 
 // Reopen はIssueを再オープン状態に設定する
 func (i *Issue) Reopen() {
-	i.Status = OpenIssue
-	i.ClosedAt = nil
+	i.Status = "open"
 	i.UpdatedAt = time.Now()
 }
 
