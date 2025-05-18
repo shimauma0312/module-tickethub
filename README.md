@@ -1,65 +1,54 @@
-# TicketHub - 軽量 GitHub-ライク チケット管理システム
+# TicketHub
 
-GitHubのIssue/Discussionに似た操作感で、小〜中規模チームでも自前でホストできる軽量・リアルタイムなチケット管理ツールです。
+A lightweight, real-time ticket management system that you can self-host
 
-## 主な特徴
+## Key Features
 
-- GitHub ライクな UI/UX
-- リアルタイム更新 (WebSocket)
-- Markdownによる豊かなコンテンツ表現
-- 軽量で導入しやすいインフラ構成
-- クロスプラットフォーム (x86/ARM)
+- GitHub-like UI/UX
+- Real-time updates (WebSocket)
+- Rich content expression with Markdown
+- Lightweight and easy-to-deploy infrastructure
+- Cross-platform compatibility (x86/ARM)
 
-## 技術スタック
+## Technology Stack
 
-- **フロントエンド**: Nuxt 3 (Vue 3 + Vite), Pinia, TailwindCSS
-- **バックエンド**: Go 1.22 / Gin
-- **リアルタイム通信**: WebSocket (SockJS + STOMP)
-- **データベース**: SQLite 3 (FTS5)
-- **キャッシュ**: Redis (オプション)
-- **コンテナ**: Docker
+- **Frontend**: Nuxt 3 (Vue 3 + Vite), Pinia, TailwindCSS
+- **Backend**: Go 1.22 / Gin
+- **Real-time Communication**: WebSocket (SockJS + STOMP)
+- **Database**: SQLite 3 (FTS5)
+- **Cache**: Redis (optional)
+- **Container**: Docker
 
-## クイックスタート
+## Quick Start
 
-### 前提条件
+### Prerequisites
 
-- Docker と Docker Compose がインストールされていること
+- Docker and Docker Compose installed
 
-### 1. リポジトリをクローン
+### 1. Clone the Repository
 
 ```bash
 git clone https://github.com/shimauma0312/module-tickethub.git
 cd module-tickethub
 ```
 
-### 2. 環境変数の設定
+### 2. Set Up Environment Variables
 
 ```bash
 cp .env.example .env
-# 必要に応じて .env ファイルを編集
+# Edit the .env file as needed
 ```
 
-### 3. アプリケーションの起動
+### 3. Launch the Application
 
 ```bash
 docker compose up
 ```
 
-これだけです！ブラウザで http://localhost:3000 にアクセスして、TicketHubを利用開始できます。
 
-## 開発環境
+## Development Environment
 
-### CI/CD
-
-このプロジェクトには自動テスト、ビルド、デプロイのためのCI/CDパイプラインが実装されています。
-詳細は [CI/CD ドキュメント](./DOCS/CI-CD.md) を参照してください。
-
-GitHub Actionsを使用して以下の自動化が行われます:
-- プルリクエスト時の自動テストとコード品質チェック
-- メインブランチへのマージ時の自動デプロイ
-- セキュリティスキャンとコード品質の監視
-
-### フロントエンド開発
+### Frontend Development
 
 ```bash
 cd frontend
@@ -67,7 +56,7 @@ yarn install
 yarn dev
 ```
 
-または npm を使用する場合：
+Or if you're using npm:
 
 ```bash
 cd frontend
@@ -75,7 +64,7 @@ npm install
 npm run dev
 ```
 
-### バックエンド開発
+### Backend Development
 
 ```bash
 cd backend
@@ -83,19 +72,8 @@ go mod tidy
 go run main.go
 ```
 
-## 本番環境
-
-本番環境では、最適化されたDockerイメージを使用します：
+## Production Environment
 
 ```bash
 docker compose -f docker-compose.prod.yml up -d
 ```
-
-## コントリビュート
-
-バグ報告、機能リクエスト、プルリクエストは大歓迎です！
-コントリビュートの前に、プロジェクトの行動規範とコントリビューションガイドを確認してください。
-
-## ライセンス
-
-このプロジェクトは MIT ライセンスの下で公開されています。
