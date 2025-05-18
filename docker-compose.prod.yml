@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: tickethub-frontend-prod
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - API_URL=http://backend:8080
+      - WS_URL=http://backend:8080/ws
+    networks:
+      - tickethub-network
+    depends_on:
+      - backend
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: tickethub-backend-prod
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      - GIN_MODE=release
+      - API_PORT=8080
+      - SQLITE_DB_PATH=/app/data/tickethub.db
+      - REDIS_ENABLED=true
+      - REDIS_ADDR=redis:6379
+    volumes:
+      - tickethub-data-prod:/app/data
+    networks:
+      - tickethub-network
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:alpine
+    container_name: tickethub-redis-prod
+    restart: always
+    volumes:
+      - redis-data-prod:/data
+    networks:
+      - tickethub-network
+
+networks:
+  tickethub-network:
+    driver: bridge
+
+volumes:
+  tickethub-data-prod:
+  redis-data-prod:

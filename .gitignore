@@ -18,9 +18,19 @@
 # SQLiteデータベース
 *.db
 *.db-journal
+*.sqlite
+*.sqlite3
+
+# テストカバレッジレポート
+/backend/coverage*
+coverage.txt
+profile.out
+/frontend/coverage/
 
 # Node.js依存関係
 /frontend/node_modules/
+/tests/node_modules/
+node_modules/
 /frontend/.nuxt/
 /frontend/.output/
 /frontend/dist/
@@ -51,6 +61,25 @@ Thumbs.db
 
 # Docker関連
 .docker/data/
+docker-data/
+volumes/
 
 # GitHub Copilotの設定は除外しない
 !.github/copilot/
+
+# マイグレーション一時ファイル
+*.migrate
+
+# テスト用一時データ
+*.test.db
+/backend/tmp/
+/frontend/tmp/
+/tests/test-results/
+/tests/playwright-report/
+/tests/playwright/.cache/
+
+# ビルドキャッシュ
+.cache/
+__pycache__/
+*.py[cod]
+*$py.class

@@ -1,0 +1,45 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Docker: Start All",
+      "type": "shell",
+      "command": "docker compose up",
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "Docker: Build All",
+      "type": "shell",
+      "command": "docker compose build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Docker: Stop All",
+      "type": "shell",
+      "command": "docker compose down",
+      "problemMatcher": []
+    },
+    {
+      "label": "Backend: Go Mod Tidy",
+      "type": "shell",
+      "command": "cd backend && go mod tidy",
+      "problemMatcher": []
+    },
+    {
+      "label": "Frontend: Install Dependencies",
+      "type": "shell",
+      "command": "cd frontend && yarn install",
+      "problemMatcher": []
+    },
+    {
+      "label": "Frontend: Dev Server",
+      "type": "shell",
+      "command": "cd frontend && yarn dev",
+      "problemMatcher": []
+    }
+  ]
+}

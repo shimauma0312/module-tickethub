@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: tickethub-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - API_URL=http://localhost:8080
+      - WS_URL=http://localhost:8080/ws
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    networks:
+      - tickethub-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: tickethub-backend
+    ports:
+      - "8080:8080"
+    environment:
+      - GIN_MODE=debug
+      - API_PORT=8080
+      - DB_TYPE=sqlite
+      - SQLITE_DB_PATH=/app/data/tickethub.db
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=tickethub
+      - DB_SSLMODE=disable
+      - REDIS_ENABLED=false
+      - REDIS_ADDR=redis:6379
+    volumes:
+      - ./backend:/app
+      - tickethub-data:/app/data
+    networks:
+      - tickethub-network
+
+  # Redis (オプション - 本番環境用)
+  redis:
+    image: redis:alpine
+    container_name: tickethub-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - tickethub-network
+    profiles:
+      - prod
+
+networks:
+  tickethub-network:
+    driver: bridge
+
+volumes:
+  tickethub-data:
+  redis-data:

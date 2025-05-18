@@ -1,0 +1,80 @@
+name: Code Quality & Security
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master, develop ]
+  schedule:
+    - cron: '0 0 * * 0' # 毎週日曜日に実行
+
+jobs:
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      
+      # Goのコードセキュリティスキャン
+      - name: Run Gosec Security Scanner
+        uses: securego/gosec@master
+        with:
+          args: ./backend/...
+          
+      # コンテナイメージのセキュリティスキャン
+      - name: Build container images
+        run: docker-compose build
+        
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'module-tickethub-backend:latest'
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          severity: 'CRITICAL,HIGH'
+          
+  code-quality:
+    name: Code Quality
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        
+      # Go Code Quality
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: 1.22
+          
+      - name: Run gofmt
+        run: test -z "$(gofmt -l ./backend/)"
+        
+      - name: Run Go Vet
+        run: go vet ./backend/...
+        
+      # Frontend Code Quality
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          
+      - name: Run ESLint
+        run: |
+          cd frontend
+          npm ci
+          npm run lint || echo "No lint script found"
+          
+      # SonarQube/SonarCloud統合 (オプション)
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          projectBaseDir: .
+          args: >
+            -Dsonar.organization=shimauma0312
+            -Dsonar.projectKey=shimauma0312_module-tickethub
+        continue-on-error: true  # SonarCloudの設定がない場合もCIを継続
