@@ -1,10 +1,15 @@
 package config
 
 import (
+	"database/sql"
 	"fmt"
 	"os"
 	"path/filepath"
 	"strconv"
+
+	"gorm.io/driver/postgres"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 )
 
 // DBType はサポートされているデータベースタイプを表す型です
@@ -154,37 +159,70 @@ func NewDatabaseConfig() (*DatabaseConfig, error) {
 	return config, nil
 }
 
-// DSN はデータベース接続文字列を生成します
+// DSN はPostgreSQL用のデータソース名を生成します
 func (c *DatabaseConfig) DSN() string {
+	if c.Type != Postgres {
+		return "" // PostgreSQL以外の場合は空文字列を返す
+	}
+	// 環境変数からSSLModeを取得、デフォルトは "disable"
+	sslMode := os.Getenv("DB_SSLMODE")
+	if sslMode == "" {
+		sslMode = "disable" // デフォルトSSLモード
+	}
+	return fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
+		c.Host, c.Port, c.User, c.Password, c.DBName, sslMode)
+}
+
+// GetGormDialector は設定に基づいて適切なGORM Dialectorを返します
+func (c *DatabaseConfig) GetGormDialector() (gorm.Dialector, error) {
 	switch c.Type {
 	case SQLite:
-		return c.SQLitePath
-
+		return sqlite.Open(c.SQLitePath), nil
 	case Postgres:
-		// PostgreSQL接続文字列
-		return fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
-			c.Host, c.Port, c.User, c.Password, c.DBName, c.SSLMode)
-
+		return postgres.Open(c.DSN()), nil
 	case SQLServer:
-		// SQL Server接続文字列
-		dsn := fmt.Sprintf("server=%s;user id=%s;password=%s;database=%s",
-			c.Host, c.User, c.Password, c.DBName)
-
-		if c.Port != "" && c.Port != "1433" {
-			dsn += fmt.Sprintf(";port=%s", c.Port)
-		}
-
-		if c.Instance != "" {
-			dsn += fmt.Sprintf(";instance=%s", c.Instance)
-		}
-
-		if c.TrustServerCert {
-			dsn += ";TrustServerCertificate=true"
-		}
-
-		return dsn
-
+		// SQL Server 接続文字列の構築例 (環境変数から読み込むことを推奨)
+		// dsn := fmt.Sprintf("sqlserver://%s:%s@%s:%s?database=%s",
+		// 	c.User, c.Password, c.Host, c.Port, c.DBName)
+		// if c.Instance != "" {
+		// 	dsn = fmt.Sprintf("sqlserver://%s:%s@%s\\\\%s:%s?database=%s",
+		// 		c.User, c.Password, c.Host, c.Instance, c.Port, c.DBName)
+		// }
+		// return sqlserver.Open(dsn), nil // sqlserver driver のインポートが必要
+		return nil, fmt.Errorf("SQL Server is not yet supported") // 現状維持
 	default:
-		return ""
+		return nil, fmt.Errorf("unsupported database type: %s", c.Type)
 	}
+}
+
+// ConnectDB は設定に基づいてデータベース接続を確立します
+// この関数はGORMの導入により、InitGormDB に置き換えられるべきです。
+// 互換性のために残す場合でも、内容はGORMベースに修正するか、非推奨とすべきです。
+func ConnectDB(config *DatabaseConfig) (*sql.DB, error) {
+	// GORMを使用する場合、この関数は直接的には使用されません。
+	// InitGormDB を使用して *gorm.DB を取得し、そこから *sql.DB を取得できます。
+	// 例: gormDB, err := InitGormDB(config)
+	//     if err != nil { return nil, err }
+	//     sqlDB, err := gormDB.DB()
+	//     if err != nil { return nil, err }
+	//     return sqlDB, nil
+	return nil, fmt.Errorf("ConnectDB is deprecated, use InitGormDB and then db.DB()")
+}
+
+// CloseDB はデータベース接続を安全に閉じます
+func CloseDB(db *sql.DB) {
+	if db != nil {
+		db.Close()
+	}
+}
+
+// GetDB は現在のデータベース接続を返します（この関数はGORM導入により不要になる可能性があります）
+func GetDB() *sql.DB {
+	// グローバルなDB接続変数を使用する場合はここで返す
+	return nil
+}
+
+// SetDB は現在のデータベース接続を設定します（この関数はGORM導入により不要になる可能性があります）
+func SetDB(db *sql.DB) {
+	// グローバルなDB接続変数を設定する場合はここで行う
 }

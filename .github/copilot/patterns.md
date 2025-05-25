@@ -8,23 +8,21 @@
 - パッケージは責務ごとに適切に分割する
 - テストカバレッジ80%以上を目指す
 
-* @vue @typescript @javascript
+* @vue @typescript
 - Composition API + TypeScriptを使用
 - コンポーネントは単一責務にする
 - TailwindCSSを優先して使用
 - Piniaによる状態管理
 
 * @css
-- TailwindCSSのユーティリティクラスを優先
-- カスタムクラスはBEM命名規則に従う
+- BEM命名規則に従う
 
 * @dockerfile
 - マルチステージビルドで最適化
 - セキュリティを考慮した設定
 
 * @sql
-- SQLite FTS5を活用した検索クエリ
-- インデックスを適切に設定
+- 初期DBはsqliteだが、基本的にどのDBMSとも互換性を持たす。
 
 * @yaml @json
 - CI/CD設定は既存のパターンに従う

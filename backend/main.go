@@ -10,8 +10,12 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
-	"github.com/shimauma0312/module-tickethub/config"
-	"github.com/shimauma0312/module-tickethub/services"
+	"github.com/shimauma0312/module-tickethub/backend/api"
+	"github.com/shimauma0312/module-tickethub/backend/config"
+	_ "github.com/shimauma0312/module-tickethub/backend/docs" // Swaggerドキュメント用
+	"github.com/shimauma0312/module-tickethub/backend/services"
+	swaggerfiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 func main() {
@@ -41,6 +45,38 @@ func main() {
 
 	// リポジトリファクトリーの作成
 	repoFactory := services.NewRepositoryFactory(db, dbConfig.Type)
+
+	// 認証サービスの初期化
+	userRepo, err := repoFactory.NewUserRepository()
+	if err != nil {
+		log.Fatalf("Failed to create user repository: %v", err)
+	}
+
+	tokenRepo, err := repoFactory.NewAuthTokenRepository()
+	if err != nil {
+		log.Fatalf("Failed to create auth token repository: %v", err)
+	}
+
+	passwordResetRepo, err := repoFactory.NewPasswordResetRepository()
+	if err != nil {
+		log.Fatalf("Failed to create password reset repository: %v", err)
+	}
+
+	// JWT設定
+	jwtSecret := os.Getenv("JWT_SECRET")
+	if jwtSecret == "" {
+		jwtSecret = "tickethub-jwt-secret-key" // 本番環境では環境変数から取得する
+	}
+
+	// 認証サービスの作成
+	authService := services.NewAuthService(
+		userRepo,
+		tokenRepo,
+		passwordResetRepo,
+		jwtSecret,
+		30, // アクセストークンの有効期限（分）
+		7,  // リフレッシュトークンの有効期限（日）
+	)
 
 	// Ginの設定
 	r := gin.Default()
@@ -74,34 +110,160 @@ func main() {
 	// APIルートの設定
 	apiGroup := r.Group("/api")
 	{
+		// CSRF保護トークン生成
+		apiGroup.GET("/csrf-token", api.GenerateCSRFToken)
+
+		// Swaggerドキュメント
+		r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
+
+		// 認証ルート
+		authGroup := apiGroup.Group("/auth")
+		{
+			// 認証ハンドラーの作成
+			authHandler := api.NewAuthHandler(authService)
+
+			// 認証ルートの設定
+			authGroup.POST("/register", authHandler.Register)
+			authGroup.POST("/login", authHandler.Login)
+			authGroup.POST("/refresh-token", authHandler.RefreshToken)
+			authGroup.POST("/password-reset", authHandler.InitiatePasswordReset)
+			authGroup.POST("/password-reset/validate", authHandler.ValidatePasswordResetToken)
+			authGroup.POST("/password-reset/complete", authHandler.CompletePasswordReset)
+
+			// 認証が必要なルート
+			authRequiredGroup := authGroup.Group("/")
+			authRequiredGroup.Use(api.AuthMiddleware(authService))
+			{
+				authRequiredGroup.POST("/logout", authHandler.Logout)
+				authRequiredGroup.POST("/logout-all", authHandler.LogoutAll)
+				authRequiredGroup.POST("/change-password", authHandler.ChangePassword)
+			}
+		}
+
 		v1 := apiGroup.Group("/v1")
 		{
-			// Issueリポジトリの作成
+			// 各種リポジトリの作成
 			issueRepo, err := repoFactory.NewIssueRepository()
 			if err != nil {
 				log.Fatalf("Failed to create issue repository: %v", err)
 			}
 
-			// 各種エンドポイントを設定
-			v1.GET("/issues", func(c *gin.Context) {
-				// クエリパラメータの取得
-				page := 1
-				limit := 10
+			discussionRepo, err := repoFactory.NewDiscussionRepository()
+			if err != nil {
+				log.Fatalf("Failed to create discussion repository: %v", err)
+			}
 
-				// データベースから取得
-				issues, total, err := issueRepo.List(c, map[string]interface{}{}, page, limit)
-				if err != nil {
-					c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-					return
-				}
+			commentRepo, err := repoFactory.NewCommentRepository()
+			if err != nil {
+				log.Fatalf("Failed to create comment repository: %v", err)
+			}
 
-				c.JSON(http.StatusOK, gin.H{
-					"issues": issues,
-					"total":  total,
-					"page":   page,
-					"limit":  limit,
-				})
-			})
+			labelRepo, err := repoFactory.NewLabelRepository()
+			if err != nil {
+				log.Fatalf("Failed to create label repository: %v", err)
+			}
+
+			milestoneRepo, err := repoFactory.NewMilestoneRepository()
+			if err != nil {
+				log.Fatalf("Failed to create milestone repository: %v", err)
+			}
+
+			reactionRepo, err := repoFactory.NewReactionRepository()
+			if err != nil {
+				log.Fatalf("Failed to create reaction repository: %v", err)
+			}
+
+			userRepo, err := repoFactory.NewUserRepository()
+			if err != nil {
+				log.Fatalf("Failed to create user repository: %v", err)
+			}
+
+			// 検索サービスの作成
+			searchService, err := repoFactory.NewSearchService()
+			if err != nil {
+				log.Fatalf("Failed to create search service: %v", err)
+			}
+
+			// 各種ハンドラーの作成
+			issueHandler := api.NewIssueHandler(issueRepo, labelRepo, milestoneRepo, userRepo)
+			discussionHandler := api.NewDiscussionHandler(discussionRepo, labelRepo, userRepo)
+			commentHandler := api.NewCommentHandler(commentRepo, issueRepo, discussionRepo, reactionRepo, userRepo)
+			labelHandler := api.NewLabelHandler(labelRepo)
+			milestoneHandler := api.NewMilestoneHandler(milestoneRepo)
+			assignmentHandler := api.NewAssignmentHandler(issueRepo, userRepo)
+			markdownHandler := api.NewMarkdownHandler()
+			draftHandler := api.NewDraftHandler(issueRepo, discussionRepo)
+			searchHandler := api.NewSearchHandler(searchService)
+
+			// 認証が必要なルートグループ
+			authGroup := v1.Group("/")
+			authGroup.Use(api.AuthMiddleware(authService))
+
+			// 管理者権限が必要なルートグループ
+			adminGroup := authGroup.Group("/")
+			adminGroup.Use(api.AdminMiddleware())
+
+			// Issue関連のエンドポイント
+			v1.GET("/issues", issueHandler.ListIssues)
+			v1.GET("/issues/:id", issueHandler.GetIssue)
+			v1.GET("/issues/search", issueHandler.SearchIssues)
+			authGroup.POST("/issues", issueHandler.CreateIssue)
+			authGroup.PUT("/issues/:id", issueHandler.UpdateIssue)
+			authGroup.DELETE("/issues/:id", issueHandler.DeleteIssue)
+			authGroup.PATCH("/issues/:id/status", issueHandler.UpdateIssueStatus)
+			authGroup.PATCH("/issues/:id/draft", issueHandler.UpdateIssueDraftStatus)
+
+			// Discussion関連のエンドポイント
+			v1.GET("/discussions", discussionHandler.ListDiscussions)
+			v1.GET("/discussions/:id", discussionHandler.GetDiscussion)
+			v1.GET("/discussions/search", discussionHandler.SearchDiscussions)
+			authGroup.POST("/discussions", discussionHandler.CreateDiscussion)
+			authGroup.PUT("/discussions/:id", discussionHandler.UpdateDiscussion)
+			authGroup.DELETE("/discussions/:id", discussionHandler.DeleteDiscussion)
+			authGroup.PATCH("/discussions/:id/status", discussionHandler.UpdateDiscussionStatus)
+			authGroup.PATCH("/discussions/:id/draft", discussionHandler.UpdateDiscussionDraftStatus)
+
+			// コメント関連のエンドポイント
+			v1.GET("/comments/:id", commentHandler.GetComment)
+			v1.GET("/:target_type/:target_id/comments", commentHandler.ListComments)
+			v1.GET("/comments/:comment_id/replies", commentHandler.ListReplies)
+			authGroup.POST("/:target_type/:target_id/comments", commentHandler.CreateComment)
+			authGroup.POST("/:target_type/:target_id/comments/reply", commentHandler.CreateReplyComment)
+			authGroup.PUT("/comments/:id", commentHandler.UpdateComment)
+			authGroup.DELETE("/comments/:id", commentHandler.DeleteComment)
+
+			// ラベル関連のエンドポイント
+			v1.GET("/labels", labelHandler.ListLabels)
+			v1.GET("/labels/:id", labelHandler.GetLabel)
+			adminGroup.POST("/labels", labelHandler.CreateLabel)
+			adminGroup.PUT("/labels/:id", labelHandler.UpdateLabel)
+			adminGroup.DELETE("/labels/:id", labelHandler.DeleteLabel)
+
+			// マイルストーン関連のエンドポイント
+			v1.GET("/milestones", milestoneHandler.ListMilestones)
+			v1.GET("/milestones/:id", milestoneHandler.GetMilestone)
+			authGroup.POST("/milestones", milestoneHandler.CreateMilestone)
+			authGroup.PUT("/milestones/:id", milestoneHandler.UpdateMilestone)
+			authGroup.DELETE("/milestones/:id", milestoneHandler.DeleteMilestone)
+			authGroup.PATCH("/milestones/:id/status", milestoneHandler.UpdateMilestoneStatus)
+
+			// アサイン関連のエンドポイント
+			authGroup.PUT("/issues/:id/assign", assignmentHandler.AssignIssue)
+			authGroup.PUT("/issues/:id/unassign", assignmentHandler.UnassignIssue)
+
+			// Markdown関連のエンドポイント
+			v1.POST("/markdown", markdownHandler.RenderMarkdown)
+			v1.POST("/markdown/raw", markdownHandler.RenderRawMarkdown)
+
+			// ドラフト関連のエンドポイント
+			authGroup.GET("/drafts", draftHandler.ListDrafts)
+			authGroup.POST("/drafts/issues", draftHandler.SaveIssueDraft)
+			authGroup.PUT("/drafts/issues/:id", draftHandler.SaveIssueDraft)
+			authGroup.POST("/drafts/discussions", draftHandler.SaveDiscussionDraft)
+			authGroup.PUT("/drafts/discussions/:id", draftHandler.SaveDiscussionDraft)
+
+			// 検索関連のエンドポイント
+			searchHandler.RegisterRoutes(r)
 		}
 	}
 
