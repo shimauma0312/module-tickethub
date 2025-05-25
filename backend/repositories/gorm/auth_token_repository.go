@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/shimauma0312/module-tickethub/models" // モジュールパスを修正
+	"github.com/shimauma0312/module-tickethub/backend/models" // モジュールパスを修正
 	"gorm.io/gorm"
 )
 

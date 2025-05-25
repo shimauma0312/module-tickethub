@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/shimauma0312/module-tickethub/models"
+	"github.com/shimauma0312/module-tickethub/backend/models"
 	"gorm.io/gorm"
 )
 

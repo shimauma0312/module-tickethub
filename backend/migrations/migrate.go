@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/shimauma0312/module-tickethub/config" // モジュールパスを修正
+	"github.com/shimauma0312/module-tickethub/backend/config" // モジュールパスを修正
 	"gorm.io/gorm"
 )
 
@@ -32,11 +32,3 @@ func MigrateDB(db *gorm.DB, dbConfig *config.DatabaseConfig, direction string) e
 
 	return nil
 }
-
-// setupSQLiteMigration, setupPostgresMigration, getMigrationsPath は GORM移行により不要となるため削除
-/*
-// setupSQLiteMigration はSQLite用のマイグレーション設定を行います
-// ... (省略) ...
-// getMigrationsPath はデータベースタイプに応じたマイグレーションファイルのパスを返します
-// ... (省略) ...
-*/

@@ -4,8 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
-	"github.com/shimauma0312/module-tickethub/models"
+	"github.com/shimauma0312/module-tickethub/backend/models"
 	"gorm.io/gorm"
 )
 
@@ -125,4 +126,28 @@ func (r *UserRepository) Search(ctx context.Context, query string, page, limit i
 	}
 
 	return users, int(total), nil
+}
+
+// CountUsers は総ユーザー数を取得します
+func (r *UserRepository) CountUsers(ctx context.Context) (int64, error) {
+	var count int64
+	err := r.db.WithContext(ctx).Model(&models.User{}).Count(&count).Error
+	if err != nil {
+		return 0, fmt.Errorf("failed to count users: %w", err)
+	}
+	return count, nil
+}
+
+// CountActiveUsers はアクティブユーザー数を取得します（指定日数以内にログインしたユーザー）
+func (r *UserRepository) CountActiveUsers(ctx context.Context, days int) (int64, error) {
+	var count int64
+	// last_login_at フィールドがあることを前提とし、指定日数以内にログインしたユーザーを数える
+	// 実際のUserモデルにlast_login_atフィールドがない場合は、AuthTokenテーブルから判定する必要がある
+	err := r.db.WithContext(ctx).Model(&models.User{}).
+		Where("last_login_at > ?", time.Now().AddDate(0, 0, -days)).
+		Count(&count).Error
+	if err != nil {
+		return 0, fmt.Errorf("failed to count active users: %w", err)
+	}
+	return count, nil
 }

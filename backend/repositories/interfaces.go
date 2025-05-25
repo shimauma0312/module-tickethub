@@ -15,13 +15,16 @@ type IssueRepository interface {
 	// List は条件に一致するIssueの一覧を取得します
 	List(ctx context.Context, filter map[string]interface{}, page, limit int) ([]*models.Issue, int, error)
 	// Update は既存のIssueを更新します
-	Update(ctx context.Context, issue *models.Issue) error
-	// Delete はIssueを削除します
+	Update(ctx context.Context, issue *models.Issue) error // Delete はIssueを削除します
 	Delete(ctx context.Context, id int64) error
 	// Search はIssueの全文検索を行います
 	Search(ctx context.Context, query string, page, limit int) ([]*models.Issue, int, error)
 	// GetAll はすべてのIssueを取得します（検索インデックス構築用）
 	GetAll(ctx context.Context) ([]*models.Issue, error)
+	// CountIssues は総Issue数を取得します
+	CountIssues(ctx context.Context) (int64, error)
+	// CountOpenIssues はオープンなIssue数を取得します
+	CountOpenIssues(ctx context.Context) (int64, error)
 }
 
 // UserRepository はUser関連のデータベース操作を抽象化するインターフェース
@@ -37,11 +40,14 @@ type UserRepository interface {
 	// List は条件に一致するUserの一覧を取得します
 	List(ctx context.Context, filter map[string]interface{}, page, limit int) ([]*models.User, int, error)
 	// Update は既存のUserを更新します
-	Update(ctx context.Context, user *models.User) error
-	// Delete はUserを削除します
+	Update(ctx context.Context, user *models.User) error // Delete はUserを削除します
 	Delete(ctx context.Context, id int64) error
 	// Search はUserの全文検索を行います
 	Search(ctx context.Context, query string, page, limit int) ([]*models.User, int, error)
+	// CountUsers は総ユーザー数を取得します
+	CountUsers(ctx context.Context) (int64, error)
+	// CountActiveUsers はアクティブユーザー数を取得します（指定日数以内にログインしたユーザー）
+	CountActiveUsers(ctx context.Context, days int) (int64, error)
 }
 
 // UserSettingsRepository はUserSettings関連のデータベース操作を抽象化するインターフェース
@@ -133,11 +139,14 @@ type DiscussionRepository interface {
 	// List は条件に一致するDiscussionの一覧を取得します
 	List(ctx context.Context, filter map[string]interface{}, page, limit int) ([]*models.Discussion, int, error)
 	// Update は既存のDiscussionを更新します
-	Update(ctx context.Context, discussion *models.Discussion) error
-	// Delete はDiscussionを削除します
+	Update(ctx context.Context, discussion *models.Discussion) error // Delete はDiscussionを削除します
 	Delete(ctx context.Context, id int64) error
 	// Search はDiscussionの全文検索を行います
 	Search(ctx context.Context, query string, page, limit int) ([]*models.Discussion, int, error)
+	// CountDiscussions は総Discussion数を取得します
+	CountDiscussions(ctx context.Context) (int64, error)
+	// CountOpenDiscussions はオープンなDiscussion数を取得します
+	CountOpenDiscussions(ctx context.Context) (int64, error)
 }
 
 // CommentRepository はComment関連のデータベース操作を抽象化するインターフェース
@@ -153,11 +162,12 @@ type CommentRepository interface {
 	// Update は既存のCommentを更新します
 	Update(ctx context.Context, comment *models.Comment) error
 	// Delete はCommentを削除します
-	Delete(ctx context.Context, id int64) error
-	// Search はCommentの全文検索を行います
+	Delete(ctx context.Context, id int64) error // Search はCommentの全文検索を行います
 	Search(ctx context.Context, query string, page, limit int) ([]*models.Comment, int, error)
 	// GetAllOfType は指定したタイプのすべてのコメントを取得します（検索インデックス構築用）
 	GetAllOfType(ctx context.Context, commentType string) ([]*models.Comment, error)
+	// CountComments は総コメント数を取得します
+	CountComments(ctx context.Context) (int64, error)
 }
 
 // ReactionRepository はReaction関連のデータベース操作を抽象化するインターフェース
@@ -216,6 +226,43 @@ type NotificationTemplateRepository interface {
 	Delete(ctx context.Context, id int64) error
 }
 
+// SystemSettingsRepository はSystemSettings関連のデータベース操作を抽象化するインターフェース
+type SystemSettingsRepository interface {
+	// Get はシステム設定を取得します
+	Get(ctx context.Context) (*models.SystemSettings, error)
+	// CreateOrUpdate はシステム設定を作成または更新します
+	CreateOrUpdate(ctx context.Context, settings *models.SystemSettings) error
+}
+
+// ActivityLogRepository はActivityLog関連のデータベース操作を抽象化するインターフェース
+type ActivityLogRepository interface {
+	// Create は新しいActivityLogを作成します
+	Create(ctx context.Context, log *models.ActivityLog) error
+	// List は条件に一致するActivityLogの一覧を取得します
+	List(ctx context.Context, filter map[string]interface{}, page, limit int) ([]*models.ActivityLog, int, error)
+	// GetMetrics はシステムメトリクスを取得します
+	GetMetrics(ctx context.Context) (*models.SystemMetrics, error)
+	// DeleteOldLogs は古いログを削除します
+	DeleteOldLogs(ctx context.Context, retentionDays int) error
+}
+
+// BackupRepository はBackup関連のデータベース操作を抽象化するインターフェース
+type BackupRepository interface {
+	// Create は新しいBackupInfoを作成します
+	Create(ctx context.Context, backup *models.BackupInfo) error
+	// List はBackupInfoの一覧を取得します
+	List(ctx context.Context, page, limit int) ([]*models.BackupInfo, int, error)
+	// GetByID はIDによってBackupInfoを取得します
+	GetByID(ctx context.Context, id int64) (*models.BackupInfo, error)
+	// Update はBackupInfoを更新します
+	Update(ctx context.Context, backup *models.BackupInfo) error // Delete はBackupInfoを削除します
+	Delete(ctx context.Context, id int64) error
+	// DeleteOldBackups は古いバックアップを削除します
+	DeleteOldBackups(ctx context.Context, retentionDays int) error
+	// GetLatestBackup は最新のバックアップを取得します
+	GetLatestBackup(ctx context.Context) (*models.BackupInfo, error)
+}
+
 // RepositoryFactory はDBタイプに応じたリポジトリのインスタンスを生成するインターフェース
 type RepositoryFactory interface {
 	// NewIssueRepository はIssueRepositoryの新しいインスタンスを生成します
@@ -240,6 +287,12 @@ type RepositoryFactory interface {
 	NewPushSubscriptionRepository() (PushSubscriptionRepository, error)
 	// NewNotificationTemplateRepository はNotificationTemplateRepositoryの新しいインスタンスを生成します
 	NewNotificationTemplateRepository() (NotificationTemplateRepository, error)
+	// NewSystemSettingsRepository はSystemSettingsRepositoryの新しいインスタンスを生成します
+	NewSystemSettingsRepository() (SystemSettingsRepository, error)
+	// NewActivityLogRepository はActivityLogRepositoryの新しいインスタンスを生成します
+	NewActivityLogRepository() (ActivityLogRepository, error)
+	// NewBackupRepository はBackupRepositoryの新しいインスタンスを生成します
+	NewBackupRepository() (BackupRepository, error)
 	// Close はデータベース接続をクローズします
 	Close() error
 }

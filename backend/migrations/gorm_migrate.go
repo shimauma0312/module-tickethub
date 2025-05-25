@@ -17,7 +17,15 @@ func GormMigrate(db *gorm.DB) error {
 		return fmt.Errorf("failed to migrate issue tables: %w", err)
 	}
 
-	// 他のモデルも同様に追加
+	// システム設定のマイグレーション
+	if err := models.AutoMigrateSystemSettings(db); err != nil {
+		return fmt.Errorf("failed to migrate system settings table: %w", err)
+	}
+
+	// アクティビティログとバックアップ情報のマイグレーション
+	if err := models.AutoMigrateActivityLog(db); err != nil {
+		return fmt.Errorf("failed to migrate activity log tables: %w", err)
+	}
 
 	log.Println("GORM database migration completed successfully")
 	return nil

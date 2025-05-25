@@ -178,6 +178,22 @@ func main() {
 				log.Fatalf("Failed to create user repository: %v", err)
 			}
 
+			// 管理者機能用リポジトリの作成
+			systemSettingsRepo, err := repoFactory.NewSystemSettingsRepository()
+			if err != nil {
+				log.Fatalf("Failed to create system settings repository: %v", err)
+			}
+
+			activityLogRepo, err := repoFactory.NewActivityLogRepository()
+			if err != nil {
+				log.Fatalf("Failed to create activity log repository: %v", err)
+			}
+
+			backupRepo, err := repoFactory.NewBackupRepository()
+			if err != nil {
+				log.Fatalf("Failed to create backup repository: %v", err)
+			}
+
 			// 検索サービスの作成
 			searchService, err := repoFactory.NewSearchService()
 			if err != nil {
@@ -194,6 +210,12 @@ func main() {
 			markdownHandler := api.NewMarkdownHandler()
 			draftHandler := api.NewDraftHandler(issueRepo, discussionRepo)
 			searchHandler := api.NewSearchHandler(searchService)
+
+			// 管理者機能用サービスとハンドラーの作成
+			activityLogService := services.NewActivityLogService(activityLogRepo)
+			backupService := services.NewBackupService(backupRepo, dbConfig)
+			systemMetricsService := services.NewSystemMetricsService(userRepo, issueRepo, discussionRepo, commentRepo, backupRepo)
+			adminHandler := api.NewAdminHandler(userRepo, systemSettingsRepo, activityLogService, backupService, systemMetricsService)
 
 			// 認証が必要なルートグループ
 			authGroup := v1.Group("/")
@@ -264,6 +286,24 @@ func main() {
 
 			// 検索関連のエンドポイント
 			searchHandler.RegisterRoutes(r)
+
+			// 管理者専用のエンドポイント
+			adminGroup.GET("/users", adminHandler.GetUsers)
+			adminGroup.POST("/users", adminHandler.CreateUser)
+			adminGroup.PUT("/users/:id", adminHandler.UpdateUser)
+			adminGroup.DELETE("/users/:id", adminHandler.DeleteUser)
+			adminGroup.PATCH("/users/:id/status", adminHandler.ToggleUserStatus)
+
+			adminGroup.GET("/settings", adminHandler.GetSystemSettings)
+			adminGroup.PUT("/settings", adminHandler.UpdateSystemSettings)
+
+			adminGroup.GET("/logs", adminHandler.GetActivityLogs)
+			adminGroup.GET("/metrics", adminHandler.GetSystemMetrics)
+
+			adminGroup.POST("/backup", adminHandler.CreateBackup)
+			adminGroup.GET("/backups", adminHandler.ListBackups)
+			adminGroup.POST("/restore/:id", adminHandler.RestoreBackup)
+			adminGroup.DELETE("/backups/:id", adminHandler.DeleteBackup)
 		}
 	}
 

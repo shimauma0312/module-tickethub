@@ -1,4 +1,4 @@
-module github.com/shimauma0312/module-tickethub
+module github.com/shimauma0312/module-tickethub/backend
 
 go 1.23.1
 
