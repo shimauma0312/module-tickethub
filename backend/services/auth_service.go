@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/shimauma0312/module-tickethub/models"
-	"github.com/shimauma0312/module-tickethub/repositories"
+	"github.com/shimauma0312/module-tickethub/backend/models"
+	"github.com/shimauma0312/module-tickethub/backend/repositories"
 	"golang.org/x/crypto/bcrypt"
 )
 

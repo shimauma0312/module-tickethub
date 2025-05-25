@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/shimauma0312/module-tickethub/models"
+	"github.com/shimauma0312/module-tickethub/backend/models"
 	"github.com/stretchr/testify/assert"
 )
 

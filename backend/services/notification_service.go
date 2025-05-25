@@ -11,8 +11,8 @@ import (
 	"time"
 
 	"github.com/SherClockHolmes/webpush-go"
-	"github.com/your-organization/module-tickethub/backend/models"
-	"github.com/your-organization/module-tickethub/backend/repositories"
+	"github.com/shimauma0312/module-tickethub/backend/models"
+	"github.com/shimauma0312/module-tickethub/backend/repositories"
 )
 
 // NotificationService は通知関連の機能を提供するサービス

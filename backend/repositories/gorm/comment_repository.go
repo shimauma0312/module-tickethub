@@ -2,6 +2,7 @@ package gorm
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/shimauma0312/module-tickethub/backend/models"
 	"gorm.io/gorm"
@@ -94,4 +95,14 @@ func (r *commentRepository) GetAllOfType(ctx context.Context, commentType string
 	}
 
 	return comments, nil
+}
+
+// CountComments は総コメント数を取得します
+func (r *commentRepository) CountComments(ctx context.Context) (int64, error) {
+	var count int64
+	err := r.db.WithContext(ctx).Model(&models.Comment{}).Count(&count).Error
+	if err != nil {
+		return 0, fmt.Errorf("failed to count comments: %w", err)
+	}
+	return count, nil
 }

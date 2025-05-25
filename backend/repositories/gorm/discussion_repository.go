@@ -2,6 +2,7 @@ package gorm
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/shimauma0312/module-tickethub/backend/models"
 	"gorm.io/gorm"
@@ -61,4 +62,24 @@ func (r *discussionRepository) Search(ctx context.Context, queryString string, p
 	// Count total records for pagination
 	// r.db.WithContext(ctx).Model(&models.Discussion{}).Where("title LIKE ?", "%"+queryString+"%").Count(&total)
 	return discussions, int(total), gorm.ErrNotImplemented // Placeholder
+}
+
+// CountDiscussions は総Discussion数を取得します
+func (r *discussionRepository) CountDiscussions(ctx context.Context) (int64, error) {
+	var count int64
+	err := r.db.WithContext(ctx).Model(&models.Discussion{}).Count(&count).Error
+	if err != nil {
+		return 0, fmt.Errorf("failed to count discussions: %w", err)
+	}
+	return count, nil
+}
+
+// CountOpenDiscussions はオープンなDiscussion数を取得します
+func (r *discussionRepository) CountOpenDiscussions(ctx context.Context) (int64, error) {
+	var count int64
+	err := r.db.WithContext(ctx).Model(&models.Discussion{}).Where("status = ?", "open").Count(&count).Error
+	if err != nil {
+		return 0, fmt.Errorf("failed to count open discussions: %w", err)
+	}
+	return count, nil
 }

@@ -278,3 +278,23 @@ func (r *IssueRepository) GetAll(ctx context.Context) ([]*models.Issue, error) {
 
 	return issues, nil
 }
+
+// CountIssues は総Issue数を取得します
+func (r *IssueRepository) CountIssues(ctx context.Context) (int64, error) {
+	var count int64
+	err := r.db.WithContext(ctx).Model(&models.IssueGorm{}).Count(&count).Error
+	if err != nil {
+		return 0, fmt.Errorf("failed to count issues: %w", err)
+	}
+	return count, nil
+}
+
+// CountOpenIssues はオープンなIssue数を取得します
+func (r *IssueRepository) CountOpenIssues(ctx context.Context) (int64, error) {
+	var count int64
+	err := r.db.WithContext(ctx).Model(&models.IssueGorm{}).Where("status = ?", "open").Count(&count).Error
+	if err != nil {
+		return 0, fmt.Errorf("failed to count open issues: %w", err)
+	}
+	return count, nil
+}
