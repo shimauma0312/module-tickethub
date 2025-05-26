@@ -60,9 +60,9 @@ func (h *IssueHandler) ListIssues(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
 	status := c.DefaultQuery("status", "open")
-	label := c.Query("label")
-	assigneeIDStr := c.Query("assignee")
-	milestoneIDStr := c.Query("milestone")
+	// label := c.Query("label")
+	// projectIDStr := c.Query("project_id")
+	// var projectID *int64
 
 	// フィルタの作成
 	filter := map[string]interface{}{
@@ -70,6 +70,7 @@ func (h *IssueHandler) ListIssues(c *gin.Context) {
 	}
 
 	// 担当者IDが指定されている場合
+	assigneeIDStr := c.Query("assignee")
 	if assigneeIDStr != "" {
 		assigneeID, err := strconv.ParseInt(assigneeIDStr, 10, 64)
 		if err == nil && assigneeID > 0 {
@@ -78,12 +79,22 @@ func (h *IssueHandler) ListIssues(c *gin.Context) {
 	}
 
 	// マイルストーンIDが指定されている場合
+	milestoneIDStr := c.Query("milestone")
 	if milestoneIDStr != "" {
 		milestoneID, err := strconv.ParseInt(milestoneIDStr, 10, 64)
 		if err == nil && milestoneID > 0 {
 			filter["milestone_id"] = milestoneID
 		}
 	}
+
+	// プロジェクトIDが指定されている場合
+	// if projectIDStr != "" {
+	// 	projectIDParsed, err := strconv.ParseInt(projectIDStr, 10, 64)
+	// 	if err == nil && projectIDParsed > 0 {
+	// 		projectID = &projectIDParsed
+	// 		filter["project_id"] = projectIDParsed
+	// 	}
+	// }
 
 	// ラベルが指定されている場合は別途処理が必要
 	// （実際の実装ではリポジトリレイヤーでラベルフィルタリングを行う）
