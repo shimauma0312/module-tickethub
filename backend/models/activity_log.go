@@ -70,6 +70,11 @@ const (
 	ActionSystemBackupCreated      LogAction = "system.backup_created"
 	ActionSystemBackupRestored     LogAction = "system.backup_restored"
 	ActionSystemMaintenanceToggled LogAction = "system.maintenance_toggled"
+
+	// リポジトリ関連
+	ActionRepositoryCreated LogAction = "repository.created"
+	ActionRepositoryUpdated LogAction = "repository.updated"
+	ActionRepositoryDeleted LogAction = "repository.deleted"
 )
 
 // ResourceType は事前定義されたリソースタイプ
@@ -83,6 +88,7 @@ const (
 	ResourceLabel      ResourceType = "label"
 	ResourceMilestone  ResourceType = "milestone"
 	ResourceSystem     ResourceType = "system"
+	ResourceRepository ResourceType = "repository"
 )
 
 // NewActivityLog は新しいアクティビティログを作成する
