@@ -24,22 +24,38 @@ func (f *RepositoryFactory) NewIssueRepository() (repositories.IssueRepository, 
 
 // NewUserRepository はGORM用UserRepositoryを作成します
 func (f *RepositoryFactory) NewUserRepository() (repositories.UserRepository, error) {
-	return NewUserRepository(f.db), nil
+	repo, err := NewUserRepository(f.db)
+	if err != nil {
+		return nil, err
+	}
+	return repo, nil
 }
 
 // NewUserSettingsRepository はGORM用UserSettingsRepositoryを作成します
 func (f *RepositoryFactory) NewUserSettingsRepository() (repositories.UserSettingsRepository, error) {
-	return NewUserSettingsRepository(f.db), nil
+	repo, err := NewUserSettingsRepository(f.db)
+	if err != nil {
+		return nil, err
+	}
+	return repo, nil
 }
 
 // NewLabelRepository はGORM用LabelRepositoryを作成します
 func (f *RepositoryFactory) NewLabelRepository() (repositories.LabelRepository, error) {
-	return NewLabelRepository(f.db), nil
+	repo, err := NewLabelRepository(f.db)
+	if err != nil {
+		return nil, err
+	}
+	return repo, nil
 }
 
 // NewMilestoneRepository はGORM用MilestoneRepositoryを作成します
 func (f *RepositoryFactory) NewMilestoneRepository() (repositories.MilestoneRepository, error) {
-	return NewMilestoneRepository(f.db), nil
+	repo, err := NewMilestoneRepository(f.db)
+	if err != nil {
+		return nil, err
+	}
+	return repo, nil
 }
 
 // NewDiscussionRepository はGORM用DiscussionRepositoryを作成します
@@ -85,6 +101,11 @@ func (f *RepositoryFactory) NewActivityLogRepository() (repositories.ActivityLog
 // NewBackupRepository はGORM用BackupRepositoryを作成します
 func (f *RepositoryFactory) NewBackupRepository() (repositories.BackupRepository, error) {
 	return NewBackupRepository(f.db), nil
+}
+
+// NewRepositoryRepository はGORM用RepositoryRepositoryを作成します
+func (f *RepositoryFactory) NewRepositoryRepository() (repositories.RepositoryRepository, error) {
+	return NewRepositoryRepository(f.db), nil
 }
 
 // Close はデータベース接続をクローズします

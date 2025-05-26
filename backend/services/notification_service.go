@@ -201,7 +201,7 @@ func (s *NotificationService) prepareNotificationData(ctx context.Context, notif
 	if err != nil {
 		return nil, err
 	}
-	data.User.Name = user.Name
+	data.User.Name = user.FullName
 	data.User.Email = user.Email
 
 	// アクター情報を取得
@@ -209,7 +209,7 @@ func (s *NotificationService) prepareNotificationData(ctx context.Context, notif
 	if err != nil {
 		return nil, err
 	}
-	data.Actor.Name = actor.Name
+	data.Actor.Name = actor.FullName
 	data.Actor.Email = actor.Email
 
 	// ソース情報を取得
@@ -425,7 +425,7 @@ func (s *NotificationService) UpdateUserNotificationSettings(
 	}
 
 	// 更新した設定を保存
-	return s.userSettingsRepo.Update(ctx, settings)
+	return s.userSettingsRepo.CreateOrUpdate(ctx, settings)
 }
 
 // GetUserSettings はユーザーの通知設定を取得します

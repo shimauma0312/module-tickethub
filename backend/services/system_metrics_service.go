@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"runtime"
 	"time"
 
@@ -38,32 +39,34 @@ func NewSystemMetricsService(
 
 // GetSystemMetrics はシステムメトリクスを収集して返します
 func (s *SystemMetricsService) GetSystemMetrics() (*models.SystemMetrics, error) {
+	ctx := context.Background()
+	
 	metrics := &models.SystemMetrics{
 		GeneratedAt: time.Now(),
 	}
 
 	// ユーザー統計
-	totalUsers, err := s.userRepo.CountUsers()
+	totalUsers, err := s.userRepo.CountUsers(ctx)
 	if err != nil {
 		return nil, err
 	}
 	metrics.TotalUsers = totalUsers
 
 	// アクティブユーザー（30日以内にログインしたユーザー）
-	activeUsers, err := s.userRepo.CountActiveUsers(30)
+	activeUsers, err := s.userRepo.CountActiveUsers(ctx, 30)
 	if err != nil {
 		return nil, err
 	}
 	metrics.ActiveUsers = activeUsers
 
 	// Issue統計
-	totalIssues, err := s.issueRepo.CountIssues()
+	totalIssues, err := s.issueRepo.CountIssues(ctx)
 	if err != nil {
 		return nil, err
 	}
 	metrics.TotalIssues = totalIssues
 
-	openIssues, err := s.issueRepo.CountOpenIssues()
+	openIssues, err := s.issueRepo.CountOpenIssues(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -71,13 +74,13 @@ func (s *SystemMetricsService) GetSystemMetrics() (*models.SystemMetrics, error)
 	metrics.ClosedIssues = totalIssues - openIssues
 
 	// Discussion統計
-	totalDiscussions, err := s.discussionRepo.CountDiscussions()
+	totalDiscussions, err := s.discussionRepo.CountDiscussions(ctx)
 	if err != nil {
 		return nil, err
 	}
 	metrics.TotalDiscussions = totalDiscussions
 
-	openDiscussions, err := s.discussionRepo.CountOpenDiscussions()
+	openDiscussions, err := s.discussionRepo.CountOpenDiscussions(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -85,14 +88,14 @@ func (s *SystemMetricsService) GetSystemMetrics() (*models.SystemMetrics, error)
 	metrics.ClosedDiscussions = totalDiscussions - openDiscussions
 
 	// コメント統計
-	totalComments, err := s.commentRepo.CountComments()
+	totalComments, err := s.commentRepo.CountComments(ctx)
 	if err != nil {
 		return nil, err
 	}
 	metrics.TotalComments = totalComments
 
 	// 最後のバックアップ時刻
-	lastBackup, err := s.backupRepo.GetLatestBackup()
+	lastBackup, err := s.backupRepo.GetLatestBackup(ctx)
 	if err == nil && lastBackup != nil {
 		metrics.LastBackupAt = lastBackup.CreatedAt
 	}

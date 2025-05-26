@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/shimauma0312/module-tickethub/backend/models"
+	"github.com/shimauma0312/module-tickethub/backend/repositories"
 	"gorm.io/gorm"
 )
 
@@ -16,12 +17,12 @@ import (
 type searchServiceImpl struct {
 	db          *gorm.DB
 	sqlDB       *sql.DB
-	issueRepo   IssueRepository
-	commentRepo CommentRepository
+	issueRepo   repositories.IssueRepository
+	commentRepo repositories.CommentRepository
 }
 
 // NewSearchService は SearchService の新しいインスタンスを作成する
-func NewSearchService(db *gorm.DB, issueRepo IssueRepository, commentRepo CommentRepository) (SearchService, error) {
+func NewSearchService(db *gorm.DB, issueRepo repositories.IssueRepository, commentRepo repositories.CommentRepository) (SearchService, error) {
 	sqlDB, err := db.DB()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get sql.DB: %w", err)

@@ -26,17 +26,29 @@ func (f *RepositoryFactory) NewIssueRepository() (repositories.IssueRepository, 
 
 // NewUserRepository はUserRepositoryを作成します
 func (f *RepositoryFactory) NewUserRepository() (repositories.UserRepository, error) {
-	return gormrepo.NewUserRepository(f.gormDB), nil
+	repo, err := gormrepo.NewUserRepository(f.gormDB)
+	if err != nil {
+		return nil, err
+	}
+	return repo, nil
 }
 
 // NewAuthTokenRepository はAuthTokenRepositoryを作成します
 func (f *RepositoryFactory) NewAuthTokenRepository() (repositories.AuthTokenRepository, error) {
-	return gormrepo.NewAuthTokenRepository(f.gormDB), nil
+	repo, err := gormrepo.NewAuthTokenRepository(f.gormDB)
+	if err != nil {
+		return nil, err
+	}
+	return repo, nil
 }
 
 // NewPasswordResetRepository はPasswordResetRepositoryを作成します
 func (f *RepositoryFactory) NewPasswordResetRepository() (repositories.PasswordResetRepository, error) {
-	return gormrepo.NewPasswordResetRepository(f.gormDB), nil
+	repo, err := gormrepo.NewPasswordResetRepository(f.gormDB)
+	if err != nil {
+		return nil, err
+	}
+	return repo, nil
 }
 
 // NewNotificationRepository はNotificationRepositoryを作成します
@@ -56,17 +68,29 @@ func (f *RepositoryFactory) NewNotificationTemplateRepository() (repositories.No
 
 // NewUserSettingsRepository はUserSettingsRepositoryを作成します
 func (f *RepositoryFactory) NewUserSettingsRepository() (repositories.UserSettingsRepository, error) {
-	return gormrepo.NewUserSettingsRepository(f.gormDB), nil
+	repo, err := gormrepo.NewUserSettingsRepository(f.gormDB)
+	if err != nil {
+		return nil, err
+	}
+	return repo, nil
 }
 
 // NewLabelRepository はLabelRepositoryを作成します
 func (f *RepositoryFactory) NewLabelRepository() (repositories.LabelRepository, error) {
-	return gormrepo.NewLabelRepository(f.gormDB), nil
+	repo, err := gormrepo.NewLabelRepository(f.gormDB)
+	if err != nil {
+		return nil, err
+	}
+	return repo, nil
 }
 
 // NewMilestoneRepository はMilestoneRepositoryを作成します
 func (f *RepositoryFactory) NewMilestoneRepository() (repositories.MilestoneRepository, error) {
-	return gormrepo.NewMilestoneRepository(f.gormDB), nil
+	repo, err := gormrepo.NewMilestoneRepository(f.gormDB)
+	if err != nil {
+		return nil, err
+	}
+	return repo, nil
 }
 
 // NewDiscussionRepository はDiscussionRepositoryを作成します
@@ -97,6 +121,26 @@ func (f *RepositoryFactory) NewSearchService() (SearchService, error) {
 	}
 
 	return NewSearchService(f.gormDB, issueRepo, commentRepo)
+}
+
+// NewSystemSettingsRepository はSystemSettingsRepositoryを作成します
+func (f *RepositoryFactory) NewSystemSettingsRepository() (repositories.SystemSettingsRepository, error) {
+	return gormrepo.NewSystemSettingsRepository(f.gormDB), nil
+}
+
+// NewActivityLogRepository はActivityLogRepositoryを作成します
+func (f *RepositoryFactory) NewActivityLogRepository() (repositories.ActivityLogRepository, error) {
+	return gormrepo.NewActivityLogRepository(f.gormDB), nil
+}
+
+// NewBackupRepository はBackupRepositoryを作成します
+func (f *RepositoryFactory) NewBackupRepository() (repositories.BackupRepository, error) {
+	return gormrepo.NewBackupRepository(f.gormDB), nil
+}
+
+// NewRepositoryRepository はRepositoryRepositoryを作成します
+func (f *RepositoryFactory) NewRepositoryRepository() (repositories.RepositoryRepository, error) {
+	return gormrepo.NewRepositoryRepository(f.gormDB), nil
 }
 
 // Close はデータベース接続をクローズします (GORMでは通常不要ですが、インターフェース互換性のために残すことも検討)

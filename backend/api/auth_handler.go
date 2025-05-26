@@ -154,13 +154,13 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 	token := extractToken(c)
 
 	// ユーザーIDはAuthMiddlewareで設定されることを前提
-	userID, exists := c.Get("user_id")
+	_, exists := c.Get("user_id")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
 
-	if err := h.authService.Logout(c.Request.Context(), userID.(int64), token); err != nil {
+	if err := h.authService.Logout(c.Request.Context(), token); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to logout"})
 		return
 	}
@@ -220,7 +220,7 @@ func (h *AuthHandler) RefreshToken(c *gin.Context) {
 	ipAddress := c.ClientIP()
 
 	// 新しいアクセストークンを生成
-	newAccessToken, err := h.authService.RefreshToken(
+	newAccessToken, newRefreshToken, err := h.authService.RefreshToken(
 		c.Request.Context(),
 		refreshToken,
 		userAgent,
@@ -247,13 +247,19 @@ func (h *AuthHandler) RefreshToken(c *gin.Context) {
 		true,  // HttpOnly
 	)
 
+	// 新しいリフレッシュトークンをCookieに設定
+	c.SetCookie(
+		"refresh_token",
+		newRefreshToken,
+		int((7 * 24 * time.Hour).Seconds()), // 7 days
+		"/api/auth",
+		"",
+		true,  // Secure: HTTPSでのみ送信
+		true,  // HttpOnly
+	)
+
 	c.JSON(http.StatusOK, gin.H{
-		"message": "Token refreshed",
-		"token": gin.H{
-			"access_token": newAccessToken,
-			"expires_in":   int(30 * time.Minute.Seconds()),
-			"token_type":   "Bearer",
-		},
+		"access_token": newAccessToken,
 	})
 }
 

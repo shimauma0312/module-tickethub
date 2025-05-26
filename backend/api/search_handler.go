@@ -78,9 +78,9 @@ func (h *SearchHandler) Search(c *gin.Context) {
 	// 検索サービスの呼び出し
 	results, err := h.searchService.Search(c.Request.Context(), query)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, ErrorResponse{
-			Error:   "検索に失敗しました",
-			Details: err.Error(),
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":   "検索に失敗しました",
+			"details": err.Error(),
 		})
 		return
 	}
@@ -108,15 +108,15 @@ func (h *SearchHandler) RebuildIndex(c *gin.Context) {
 
 	err := h.searchService.RebuildIndex(c.Request.Context())
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, ErrorResponse{
-			Error:   "インデックス再構築に失敗しました",
-			Details: err.Error(),
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":   "インデックス再構築に失敗しました",
+			"details": err.Error(),
 		})
 		return
 	}
 
-	c.JSON(http.StatusOK, SuccessResponse{
-		Message: "インデックスの再構築が完了しました",
+	c.JSON(http.StatusOK, gin.H{
+		"message": "インデックスの再構築が完了しました",
 	})
 }
 

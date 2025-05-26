@@ -27,6 +27,11 @@ func GormMigrate(db *gorm.DB) error {
 		return fmt.Errorf("failed to migrate activity log tables: %w", err)
 	}
 
+	// リポジトリのマイグレーション
+	if err := models.AutoMigrateRepository(db); err != nil {
+		return fmt.Errorf("failed to migrate repository table: %w", err)
+	}
+
 	log.Println("GORM database migration completed successfully")
 	return nil
 }

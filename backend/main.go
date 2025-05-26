@@ -43,8 +43,14 @@ func main() {
 	}
 	defer db.Close()
 
+	// GORM DBの初期化
+	gormDB, err := config.InitGormDB(dbConfig)
+	if err != nil {
+		log.Fatalf("Failed to initialize GORM DB: %v", err)
+	}
+
 	// リポジトリファクトリーの作成
-	repoFactory := services.NewRepositoryFactory(db, dbConfig.Type)
+	repoFactory := services.NewRepositoryFactory(gormDB)
 
 	// 認証サービスの初期化
 	userRepo, err := repoFactory.NewUserRepository()
@@ -74,8 +80,6 @@ func main() {
 		tokenRepo,
 		passwordResetRepo,
 		jwtSecret,
-		30, // アクセストークンの有効期限（分）
-		7,  // リフレッシュトークンの有効期限（日）
 	)
 
 	// Ginの設定
@@ -213,9 +217,16 @@ func main() {
 
 			// 管理者機能用サービスとハンドラーの作成
 			activityLogService := services.NewActivityLogService(activityLogRepo)
-			backupService := services.NewBackupService(backupRepo, dbConfig)
+			backupService := services.NewBackupService(backupRepo, "backups", string(dbConfig.Type), dbConfig.DSN())
 			systemMetricsService := services.NewSystemMetricsService(userRepo, issueRepo, discussionRepo, commentRepo, backupRepo)
 			adminHandler := api.NewAdminHandler(userRepo, systemSettingsRepo, activityLogService, backupService, systemMetricsService)
+
+			// リポジトリ管理のハンドラー作成
+			repoRepo, err := repoFactory.NewRepositoryRepository()
+			if err != nil {
+				log.Fatalf("Failed to create repository repository: %v", err)
+			}
+			repositoryHandler := api.NewRepositoryHandler(repoRepo, activityLogService)
 
 			// 認証が必要なルートグループ
 			authGroup := v1.Group("/")
@@ -289,21 +300,25 @@ func main() {
 
 			// 管理者専用のエンドポイント
 			adminGroup.GET("/users", adminHandler.GetUsers)
-			adminGroup.POST("/users", adminHandler.CreateUser)
 			adminGroup.PUT("/users/:id", adminHandler.UpdateUser)
-			adminGroup.DELETE("/users/:id", adminHandler.DeleteUser)
-			adminGroup.PATCH("/users/:id/status", adminHandler.ToggleUserStatus)
 
 			adminGroup.GET("/settings", adminHandler.GetSystemSettings)
 			adminGroup.PUT("/settings", adminHandler.UpdateSystemSettings)
 
-			adminGroup.GET("/logs", adminHandler.GetActivityLogs)
+			adminGroup.GET("/activity-logs", adminHandler.GetActivityLogs)
 			adminGroup.GET("/metrics", adminHandler.GetSystemMetrics)
 
-			adminGroup.POST("/backup", adminHandler.CreateBackup)
-			adminGroup.GET("/backups", adminHandler.ListBackups)
-			adminGroup.POST("/restore/:id", adminHandler.RestoreBackup)
+			adminGroup.POST("/backups", adminHandler.CreateBackup)
+			adminGroup.GET("/backups", adminHandler.GetBackups)
+			adminGroup.POST("/backups/:id/restore", adminHandler.RestoreBackup)
 			adminGroup.DELETE("/backups/:id", adminHandler.DeleteBackup)
+
+			// リポジトリ管理エンドポイントの追加
+			adminGroup.GET("/repositories", repositoryHandler.GetRepositories)
+			adminGroup.GET("/repositories/:id", repositoryHandler.GetRepository)
+			adminGroup.POST("/repositories", repositoryHandler.CreateRepository)
+			adminGroup.PUT("/repositories/:id", repositoryHandler.UpdateRepository)
+			adminGroup.DELETE("/repositories/:id", repositoryHandler.DeleteRepository)
 		}
 	}
 
