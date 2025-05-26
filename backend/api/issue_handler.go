@@ -60,7 +60,7 @@ func (h *IssueHandler) ListIssues(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
 	status := c.DefaultQuery("status", "open")
-	// label := c.Query("label")
+	
 	// projectIDStr := c.Query("project_id")
 	// var projectID *int64
 
