@@ -5,7 +5,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/shimauma0312/module-tickethub/services"
+	"github.com/shimauma0312/module-tickethub/backend/services"
 )
 
 // NotificationHandler は通知関連のAPIハンドラ
