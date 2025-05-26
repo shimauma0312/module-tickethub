@@ -56,7 +56,6 @@ func (h *DiscussionHandler) ListDiscussions(c *gin.Context) {
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
 	status := c.DefaultQuery("status", "open")
 	category := c.Query("category")
-	// label := c.Query("label")
 
 	// フィルタの作成
 	filter := map[string]interface{}{
