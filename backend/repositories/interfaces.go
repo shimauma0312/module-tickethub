@@ -290,9 +290,10 @@ type RepositoryFactory interface {
 	// NewSystemSettingsRepository はSystemSettingsRepositoryの新しいインスタンスを生成します
 	NewSystemSettingsRepository() (SystemSettingsRepository, error)
 	// NewActivityLogRepository はActivityLogRepositoryの新しいインスタンスを生成します
-	NewActivityLogRepository() (ActivityLogRepository, error)
-	// NewBackupRepository はBackupRepositoryの新しいインスタンスを生成します
+	NewActivityLogRepository() (ActivityLogRepository, error) // NewBackupRepository はBackupRepositoryの新しいインスタンスを生成します
 	NewBackupRepository() (BackupRepository, error)
+	// NewRepositoryRepository はRepositoryRepositoryの新しいインスタンスを生成します
+	NewRepositoryRepository() (RepositoryRepository, error)
 	// Close はデータベース接続をクローズします
 	Close() error
 }

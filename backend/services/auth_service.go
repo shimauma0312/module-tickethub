@@ -40,6 +40,10 @@ var (
 	ErrUserDisabled = errors.New("user account is disabled")
 	// ErrInvalidResetToken は無効なリセットトークンのエラー
 	ErrInvalidResetToken = errors.New("invalid or expired password reset token")
+	// ErrTokenRevoked はトークンが無効化されたエラー
+	ErrTokenRevoked = errors.New("token has been revoked")
+	// ErrPasswordResetTokenInvalid はパスワードリセットトークンが無効なエラー
+	ErrPasswordResetTokenInvalid = errors.New("password reset token is invalid or expired")
 )
 
 // JWTClaims はJWTトークンのクレーム
@@ -177,6 +181,16 @@ func (s *AuthService) Logout(ctx context.Context, refreshToken string) error {
 		return fmt.Errorf("failed to revoke token: %w", err)
 	}
 
+	return nil
+}
+
+// LogoutAll はユーザーの全セッションからログアウトします
+func (s *AuthService) LogoutAll(ctx context.Context, userID int64) error {
+	// ユーザーのすべてのトークンを無効化
+	if err := s.tokenRepo.RevokeAllForUser(ctx, userID); err != nil {
+		return fmt.Errorf("failed to revoke all user tokens: %w", err)
+	}
+	
 	return nil
 }
 
@@ -322,6 +336,38 @@ func (s *AuthService) ResetPassword(ctx context.Context, token, newPassword stri
 	return nil
 }
 
+// CompletePasswordReset はパスワードリセットを完了します
+func (s *AuthService) CompletePasswordReset(ctx context.Context, token, newPassword string) error {
+	return s.ResetPassword(ctx, token, newPassword)
+}
+
+// ValidatePasswordResetToken はパスワードリセットトークンを検証します
+func (s *AuthService) ValidatePasswordResetToken(ctx context.Context, token string) (*models.User, error) {
+	// トークンを検索
+	passwordReset, err := s.passwordResetRepo.GetByToken(ctx, token)
+	if err != nil || passwordReset == nil {
+		return nil, ErrPasswordResetTokenInvalid
+	}
+
+	// トークンの有効性をチェック
+	if !passwordReset.IsValid() {
+		return nil, ErrPasswordResetTokenInvalid
+	}
+
+	// ユーザーを取得
+	user, err := s.userRepo.GetByID(ctx, passwordReset.UserID)
+	if err != nil || user == nil {
+		return nil, ErrUserNotFound
+	}
+
+	// アカウントが有効かチェック
+	if !user.IsActive {
+		return nil, ErrUserDisabled
+	}
+
+	return user, nil
+}
+
 // ChangePassword はパスワードを変更します
 func (s *AuthService) ChangePassword(ctx context.Context, userID int64, currentPassword, newPassword string) error {
 	// ユーザーを取得
@@ -385,6 +431,30 @@ func (s *AuthService) VerifyJWT(tokenString string) (*JWTClaims, error) {
 	}
 
 	return nil, ErrTokenInvalid
+}
+
+// ValidateToken はJWTトークンを検証し、ユーザー情報を返します
+func (s *AuthService) ValidateToken(ctx context.Context, tokenString string) (*models.User, *JWTClaims, error) {
+	claims, err := s.VerifyJWT(tokenString)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// トークンタイプがアクセストークンであることを確認
+	if claims.TokenType != string(models.AccessToken) {
+		return nil, nil, ErrTokenInvalid
+	}
+
+	user, err := s.userRepo.GetByID(ctx, claims.UserID)
+	if err != nil {
+		return nil, nil, ErrUserNotFound
+	}
+
+	if !user.IsActive {
+		return nil, nil, ErrUserDisabled
+	}
+
+	return user, claims, nil
 }
 
 // GenerateJWT はJWTトークンを生成します
