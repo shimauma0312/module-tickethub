@@ -40,7 +40,7 @@ func InitDatabase(config *DatabaseConfig) (*sql.DB, error) {
 	}
 
 	// マイグレーション実行
-	if err := migrateDatabase(db, config.Type); err != nil {
+	if err := migrateDatabase(db, string(config.Type)); err != nil {
 		return nil, fmt.Errorf("database migration failed: %w", err)
 	}
 
