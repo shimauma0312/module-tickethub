@@ -248,15 +248,15 @@ func (h *AuthHandler) RefreshToken(c *gin.Context) {
 	)
 
 	// 新しいリフレッシュトークンをCookieに設定
-	http.SetCookie(c.Writer, &http.Cookie{
-		Name:     "refresh_token",
-		Value:    newRefreshToken,
-		Expires:  time.Now().Add(7 * 24 * time.Hour),
-		HttpOnly: true,
-		Secure:   true, // HTTPSでのみ送信
-		Path:     "/api/auth",
-		SameSite: http.SameSiteLaxMode,
-	})
+	c.SetCookie(
+		"refresh_token",
+		newRefreshToken,
+		int((7 * 24 * time.Hour).Seconds()), // 7 days
+		"/api/auth",
+		"",
+		true,  // Secure: HTTPSでのみ送信
+		true,  // HttpOnly
+	)
 
 	c.JSON(http.StatusOK, gin.H{
 		"access_token": newAccessToken,
