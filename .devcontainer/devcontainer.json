@@ -12,17 +12,14 @@
   "runServices": ["backend"],
   // Codespaces でフォワードするポート
   "forwardPorts": [3000, 8080],
-  // docker-compose.yml 内の command を上書きしない
-  "overrideCommand": false,
+  // docker-compose.yml 内の command を上書きする
+  "overrideCommand": true,
   // 必要な機能 (docker compose コマンドをコンテナ内で使うため)
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": {}
   },
-  // コンテナ初回作成後に実行されるコマンド
-  // 'frontend' コンテナのワークスペースフォルダ (/app) で実行される
-  // 1. frontend の依存関係をインストール
-  // 2. backend サービスのコンテナ内で go mod tidy を実行
-  "postCreateCommand": "yarn install && docker compose -f /app/docker-compose.yml exec -T backend sh -c 'cd /app && go mod tidy'",
+  // コンテナ初回作成後に実行されるコマンド (一時的にコメントアウト)
+  // "postCreateCommand": "yarn install && sleep 10 && docker compose -f ../docker-compose.yml exec -T backend sh -c 'cd /app && go mod tidy'",
   "customizations": {
     "vscode": {
       "settings": {
