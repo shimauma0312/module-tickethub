@@ -6,8 +6,8 @@ WORKDIR /app
 # システムの依存関係をインストール
 RUN apk add --no-cache gcc musl-dev
 
-# air をインストール
-RUN go install github.com/cosmtrek/air@latest
+# air をインストール (モジュールパスを修正)
+RUN go install github.com/air-verse/air@latest
 
 # 依存関係をコピーしてインストール
 COPY go.mod go.sum* ./
