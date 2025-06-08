@@ -16,7 +16,7 @@
             v-model="user.username"
             label="ユーザー名"
             placeholder="username"
-            :error="!!errors.username"
+            :error="errors.username"
             required
           />
           <p v-if="errors.username" class="form-error">{{ errors.username }}</p>
@@ -28,7 +28,7 @@
             label="メールアドレス"
             type="email"
             placeholder="example@example.com"
-            :error="!!errors.email"
+            :error="errors.email"
             required
           />
           <p v-if="errors.email" class="form-error">{{ errors.email }}</p>
@@ -39,7 +39,7 @@
             v-model="user.fullName"
             label="氏名"
             placeholder="山田 太郎"
-            :error="!!errors.fullName"
+            :error="errors.fullName"
           />
           <p v-if="errors.fullName" class="form-error">{{ errors.fullName }}</p>
         </div>
@@ -50,7 +50,7 @@
             label="パスワード"
             type="password"
             placeholder="8文字以上で入力"
-            :error="!!errors.password"
+            :error="errors.password"
             required
           />
           <p v-if="errors.password" class="form-error">{{ errors.password }}</p>
@@ -62,7 +62,7 @@
             label="パスワード（確認）"
             type="password"
             placeholder="パスワードを再入力"
-            :error="!!errors.confirmPassword"
+            :error="errors.confirmPassword"
             required
           />
           <p v-if="errors.confirmPassword" class="form-error">{{ errors.confirmPassword }}</p>
@@ -93,7 +93,7 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue';
+import { reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
