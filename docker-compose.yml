@@ -21,7 +21,7 @@ services:
   backend:
     build:
       context: ./backend
-      dockerfile: Dockerfile # 開発用に更新したDockerfileを指します
+      dockerfile: Dockerfile # 開発用に更新したDockerfile
     container_name: tickethub-backend
     ports:
       - "8080:8080"
@@ -43,7 +43,7 @@ services:
       - tickethub-data:/app/data
     networks:
       - tickethub-network
-    # command はDockerfile側でairを実行するため、ここでは不要
+    command: air
 
   # Redis (オプション - 本番環境用)
   redis:
