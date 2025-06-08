@@ -1,0 +1,50 @@
+{
+  "name": "Tickethub Codespace",
+  // .devcontainer/devcontainer.json から見た docker-compose.yml の相対パス
+  "dockerComposeFile": [
+    "../docker-compose.yml"
+  ],
+  // メインとして接続するサービス
+  "service": "frontend",
+  // 'frontend' サービスコンテナ内のワークスペースフォルダ
+  "workspaceFolder": "/app",
+  // 起動する他のサービス
+  "runServices": ["backend"],
+  // Codespaces でフォワードするポート
+  "forwardPorts": [3000, 8080],
+  // docker-compose.yml 内の command を上書きしない
+  "overrideCommand": false,
+  // 必要な機能 (docker compose コマンドをコンテナ内で使うため)
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+  },
+  // コンテナ初回作成後に実行されるコマンド
+  // 'frontend' コンテナのワークスペースフォルダ (/app) で実行される
+  // 1. frontend の依存関係をインストール
+  // 2. backend サービスのコンテナ内で go mod tidy を実行
+  "postCreateCommand": "yarn install && docker compose -f /app/docker-compose.yml exec -T backend sh -c 'cd /app && go mod tidy'",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        // Linux コンテナ内でのデフォルトターミナルプロファイル
+        "terminal.integrated.defaultProfile.linux": "bash",
+        // Go 関連の推奨設定
+        "go.toolsManagement.autoUpdate": true,
+        // ファイルの改行コードを LF に統一
+        "files.eol": "\n"
+      },
+      // 推奨する VS Code 拡張機能
+      "extensions": [
+        "golang.go", // Go 言語サポート
+        "vue.volar", // Vue (Nuxt 3 は Volar を推奨)
+        "dbaeumer.vscode-eslint", // ESLint
+        "esbenp.prettier-vscode", // Prettier
+        "ms-azuretools.vscode-docker", // Docker 連携
+        "github.codespaces", // Codespaces 拡張機能
+        "GitHub.vscode-pull-request-github" // GitHub Pull Request 連携
+      ]
+    }
+  },
+  // Codespace 停止時のアクション
+  "shutdownAction": "stopCompose"
+}
