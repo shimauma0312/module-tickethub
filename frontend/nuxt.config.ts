@@ -1,11 +1,17 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+import { defineNuxtConfig } from 'nuxt/config';
+
 export default defineNuxtConfig({
   devtools: { enabled: true },
   ssr: false, // SPAモード
 
   modules: [
-    '@nuxtjs/tailwindcss',
     '@pinia/nuxt',
+    'nuxt-icon',
+  ],
+
+  css: [
+    '@/assets/css/design-system.css',
   ],
 
   runtimeConfig: {
