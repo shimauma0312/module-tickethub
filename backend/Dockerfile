@@ -1,4 +1,5 @@
-FROM golang:1.23-alpine AS builder
+# Goのバージョンを1.24に更新
+FROM golang:1.24-alpine AS builder
 
 WORKDIR /app
 
