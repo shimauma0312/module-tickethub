@@ -18,8 +18,8 @@
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": {}
   },
-  // コンテナ初回作成後に実行されるコマンド (一時的にコメントアウト)
-  // "postCreateCommand": "yarn install && sleep 10 && docker compose -f ../docker-compose.yml exec -T backend sh -c 'cd /app && go mod tidy'",
+  // コンテナ初回作成後に実行されるコマンド
+  "postCreateCommand": "yarn install && sleep 10 && docker compose -f ../docker-compose.yml exec -T backend sh -c 'cd /app && go mod tidy'",
   "customizations": {
     "vscode": {
       "settings": {
