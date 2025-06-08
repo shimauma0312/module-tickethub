@@ -42,11 +42,9 @@ cp .env.example .env
 ### 3. Launch the Application
 
 ```bash
-docker compose up
+docker compose up --build
 ```
 
-
-## Development Environment
 
 ### Frontend Development
 
