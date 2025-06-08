@@ -4,7 +4,8 @@
 		"vscode": {
 			"extensions": [
 				"Vue.volar",
-				"golang.go"
+				"golang.go",
+                "ms-azuretools.vscode-docker"
 			]
 		}
 	}
