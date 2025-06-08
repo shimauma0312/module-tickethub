@@ -14,7 +14,7 @@
   "devDependencies": {
     "@nuxt/devtools": "latest",
     "@nuxtjs/eslint-config-typescript": "^12.0.0",
-    "@nuxtjs/tailwindcss": "^6.8.0",
+    "@types/node": "^22.15.30",
     "@typescript-eslint/eslint-plugin": "^5.62.0",
     "@typescript-eslint/parser": "^5.62.0",
     "@vitejs/plugin-vue": "^4.3.4",
@@ -33,6 +33,8 @@
   "dependencies": {
     "@pinia/nuxt": "^0.4.11",
     "axios": "^1.5.0",
+    "marked": "^15.0.12",
+    "nuxt-icon": "^1.0.0-beta.7",
     "pinia": "^2.1.6",
     "sockjs-client": "^1.6.1"
   }
