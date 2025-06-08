@@ -1,0 +1,11 @@
+{
+	"name": "Codespaces for module-tickethub",
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"Vue.volar",
+				"golang.go"
+			]
+		}
+	}
+}
