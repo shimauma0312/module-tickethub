@@ -1,0 +1,118 @@
+/* GitHub風のデザインシステム変数 */
+:root {
+  /* カラーパレット */
+  --color-bg-canvas: #ffffff;
+  --color-bg-secondary: #f6f8fa;
+  --color-border-primary: #e1e4e8;
+  --color-text-primary: #24292e;
+  --color-text-secondary: #586069;
+  --color-text-tertiary: #6a737d;
+  --color-accent-primary: #0366d6;
+  --color-accent-secondary: #2ea44f;
+  --color-danger: #d73a49;
+  --color-warning: #ffea7f;
+  --color-success: #2ea44f;
+  --color-attention: #ffb700;
+  --color-open: #28a745;
+  --color-closed: #d73a49;
+  --color-merged: #6f42c1;
+  
+  /* スペーシング変数 */
+  --spacing-xxs: 4px;
+  --spacing-xs: 8px;
+  --spacing-sm: 12px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-xxl: 48px;
+  
+  /* シャドウ変数 */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 3px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.1);
+  
+  /* タイポグラフィ */
+  --font-size-xs: 12px;
+  --font-size-sm: 14px;
+  --font-size-md: 16px;
+  --font-size-lg: 20px;
+  --font-size-xl: 24px;
+  
+  /* 境界線の半径 */
+  --border-radius-sm: 3px;
+  --border-radius-md: 6px;
+  --border-radius-lg: 12px;
+  --border-radius-full: 9999px;
+  
+  /* アニメーション */
+  --transition-base: all 0.2s ease;
+  --transition-fast: all 0.1s ease;
+  --transition-slow: all 0.3s ease;
+}
+
+/* ベースレイアウト */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  font-size: var(--font-size-sm);
+  line-height: 1.5;
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-secondary);
+  margin: 0;
+  padding: 0;
+}
+
+/* 汎用クラス */
+.gh-container {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-md);
+}
+
+/* リセット */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+a {
+  color: var(--color-accent-primary);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* フォーカス状態のスタイル */
+:focus-visible {
+  outline: 2px solid var(--color-accent-primary);
+  outline-offset: 2px;
+}
+
+/* アクセシビリティ用ユーティリティ */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* レスポンシブユーティリティ */
+@media (max-width: 768px) {
+  .hidden-mobile {
+    display: none !important;
+  }
+}
+
+@media (min-width: 769px) {
+  .hidden-desktop {
+    display: none !important;
+  }
+}
