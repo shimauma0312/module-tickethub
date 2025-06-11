@@ -46,12 +46,14 @@ func NewSearchService(db *gorm.DB, issueRepo repositories.IssueRepository, comme
 // initFTS5Tables はFTS5検索テーブルを初期化する
 func (s *searchServiceImpl) initFTS5Tables() error {
 	// FTS5拡張モジュールが有効かチェック
-	var fts5Enabled bool
-	row := s.sqlDB.QueryRow("SELECT * FROM sqlite_master WHERE type='table' AND name='sqlite_master'")
-	if err := row.Scan(&fts5Enabled); err != nil {
-		if err != sql.ErrNoRows {
-			return fmt.Errorf("failed to check FTS5 availability: %w", err)
+	// PRAGMA compile_options を利用して FTS5 が組み込まれているか確認する
+	var dummy int
+	row := s.sqlDB.QueryRow("SELECT 1 FROM pragma_compile_options WHERE compile_options LIKE '%FTS5%' LIMIT 1")
+	if err := row.Scan(&dummy); err != nil {
+		if err == sql.ErrNoRows {
+			return fmt.Errorf("FTS5 is not enabled in this SQLite build")
 		}
+		return fmt.Errorf("failed to check FTS5 availability: %w", err)
 	}
 
 	// FTS5テーブルの作成
