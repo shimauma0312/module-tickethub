@@ -110,23 +110,13 @@ async function handleLogin() {
   try {
     // APIエンドポイントを使用してログイン
     const config = useRuntimeConfig();
-    const response = await fetch(`${config.public.apiBaseUrl}/auth/login`, {
+    const data = await $fetch(`${config.public.apiBaseUrl}/auth/login`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
+      body: {
         username_or_email: credentials.usernameOrEmail,
         password: credentials.password,
-      }),
-      credentials: 'include', // クッキーを含める
+      },
     });
-    
-    const data = await response.json();
-    
-    if (!response.ok) {
-      throw new Error(data.error || 'ログインに失敗しました');
-    }
     
     // トークンの保存（Pinia ストアなどで管理予定）
     // ローカルストレージは一時的な措置

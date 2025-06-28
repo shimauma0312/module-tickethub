@@ -119,7 +119,7 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue';
+import { reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
@@ -161,21 +161,12 @@ async function handleRequestReset() {
   try {
     // APIエンドポイントを使用してリセットリクエスト
     const config = useRuntimeConfig();
-    const response = await fetch(`${config.public.apiBaseUrl}/auth/password-reset`, {
+    const data = await $fetch(`${config.public.apiBaseUrl}/auth/password-reset`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
+      body: {
         email: resetData.email
-      }),
+      },
     });
-    
-    const data = await response.json();
-    
-    if (!response.ok) {
-      throw new Error(data.error || 'パスワードリセットリクエストに失敗しました');
-    }
     
     // 成功メッセージ
     success.value = 'メールアドレスに確認コードを送信しました。メールをご確認ください。';

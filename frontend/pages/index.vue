@@ -77,7 +77,6 @@
 </template>
 
 <script setup>
-import axios from 'axios'
 import { onMounted, ref } from 'vue'
 
 const apiStatus = ref('確認中...')
@@ -89,9 +88,11 @@ const config = useRuntimeConfig()
 async function checkApiStatus() {
   apiStatus.value = '確認中...'
   try {
-    const response = await axios.get(`${config.public.apiBaseUrl}/health`)
-    if (response.data && response.data.status === 'healthy') {
+    const { data, error } = await $fetch(`${config.public.apiBaseUrl}/health`)
+    if (data && data.status === 'healthy') {
       apiStatus.value = '接続済み'
+    } else if (error) {
+      apiStatus.value = '接続エラー'
     } else {
       apiStatus.value = '応答エラー'
     }

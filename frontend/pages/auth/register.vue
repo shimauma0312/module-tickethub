@@ -180,24 +180,15 @@ async function handleRegister() {
   try {
     // APIエンドポイントを使用してユーザー登録
     const config = useRuntimeConfig();
-    const response = await fetch(`${config.public.apiBaseUrl}/auth/register`, {
+    const data = await $fetch(`${config.public.apiBaseUrl}/auth/register`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
+      body: {
         username: user.username,
         email: user.email,
         full_name: user.fullName,
         password: user.password,
-      }),
+      },
     });
-    
-    const data = await response.json();
-    
-    if (!response.ok) {
-      throw new Error(data.error || 'ユーザー登録に失敗しました');
-    }
     
     // 登録成功メッセージ
     alert('ユーザー登録が完了しました。ログインしてください。');
