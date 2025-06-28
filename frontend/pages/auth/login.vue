@@ -16,7 +16,7 @@
             v-model="credentials.usernameOrEmail"
             label="ユーザー名またはメールアドレス"
             placeholder="username or example@example.com"
-            :error="!!errors.usernameOrEmail"
+            :error="errors.usernameOrEmail"
             required
           />
           <p v-if="errors.usernameOrEmail" class="form-error">{{ errors.usernameOrEmail }}</p>
@@ -28,7 +28,7 @@
             label="パスワード"
             type="password"
             placeholder="パスワードを入力"
-            :error="!!errors.password"
+            :error="errors.password"
             required
           />
           <p v-if="errors.password" class="form-error">{{ errors.password }}</p>
@@ -64,7 +64,7 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue';
+import { reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
@@ -110,23 +110,13 @@ async function handleLogin() {
   try {
     // APIエンドポイントを使用してログイン
     const config = useRuntimeConfig();
-    const response = await fetch(`${config.public.apiBaseUrl}/auth/login`, {
+    const data = await $fetch(`${config.public.apiBaseUrl}/auth/login`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
+      body: {
         username_or_email: credentials.usernameOrEmail,
         password: credentials.password,
-      }),
-      credentials: 'include', // クッキーを含める
+      },
     });
-    
-    const data = await response.json();
-    
-    if (!response.ok) {
-      throw new Error(data.error || 'ログインに失敗しました');
-    }
     
     // トークンの保存（Pinia ストアなどで管理予定）
     // ローカルストレージは一時的な措置

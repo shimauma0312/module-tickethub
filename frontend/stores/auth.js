@@ -43,23 +43,13 @@ export const useAuthStore = defineStore('auth', {
       
       try {
         const config = useRuntimeConfig();
-        const response = await fetch(`${config.public.apiBaseUrl}/auth/login`, {
+        const data = await $fetch(`${config.public.apiBaseUrl}/auth/login`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
+          body: {
             username_or_email: usernameOrEmail,
             password: password,
-          }),
-          credentials: 'include', // クッキーを含める
+          },
         });
-        
-        const data = await response.json();
-        
-        if (!response.ok) {
-          throw new Error(data.error || 'ログインに失敗しました');
-        }
         
         // ステート更新
         this.accessToken = data.token.access_token;
@@ -95,19 +85,17 @@ export const useAuthStore = defineStore('auth', {
         }
         
         const config = useRuntimeConfig();
-        const response = await fetch(`${config.public.apiBaseUrl}/auth/logout`, {
+        await $fetch(`${config.public.apiBaseUrl}/auth/logout`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${this.accessToken}`,
-            'Content-Type': 'application/json',
           },
-          credentials: 'include',
         });
         
-        // ステータスコードに関わらず認証情報をクリア
+        // 認証情報をクリア
         this.clearAuth();
         
-        return response.ok;
+        return true;
       } catch (err) {
         this.error = err.message;
         // エラーが発生してもログアウトは行う
@@ -130,19 +118,17 @@ export const useAuthStore = defineStore('auth', {
         }
         
         const config = useRuntimeConfig();
-        const response = await fetch(`${config.public.apiBaseUrl}/auth/logout-all`, {
+        await $fetch(`${config.public.apiBaseUrl}/auth/logout-all`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${this.accessToken}`,
-            'Content-Type': 'application/json',
           },
-          credentials: 'include',
         });
         
-        // ステータスコードに関わらず認証情報をクリア
+        // 認証情報をクリア
         this.clearAuth();
         
-        return response.ok;
+        return true;
       } catch (err) {
         this.error = err.message;
         // エラーが発生してもログアウトは行う
@@ -159,22 +145,12 @@ export const useAuthStore = defineStore('auth', {
       
       try {
         const config = useRuntimeConfig();
-        const response = await fetch(`${config.public.apiBaseUrl}/auth/refresh-token`, {
+        const data = await $fetch(`${config.public.apiBaseUrl}/auth/refresh-token`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
+          body: {
             refresh_token: this.refreshToken,
-          }),
-          credentials: 'include',
+          },
         });
-        
-        const data = await response.json();
-        
-        if (!response.ok) {
-          throw new Error(data.error || 'トークンの更新に失敗しました');
-        }
         
         // 新しいトークンで更新
         this.accessToken = data.access_token;
@@ -206,28 +182,12 @@ export const useAuthStore = defineStore('auth', {
       
       try {
         const config = useRuntimeConfig();
-        const response = await fetch(`${config.public.apiBaseUrl}/api/v1/users/me`, {
+        const data = await $fetch(`${config.public.apiBaseUrl}/api/v1/users/me`, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${this.accessToken}`,
           },
         });
-        
-        // トークンが無効な場合はリフレッシュを試みる
-        if (response.status === 401) {
-          const refreshed = await this.refreshAccessToken();
-          if (refreshed) {
-            return await this.fetchUserProfile(); // 再帰的に再試行
-          } else {
-            throw new Error('認証の有効期限が切れました。再度ログインしてください。');
-          }
-        }
-        
-        const data = await response.json();
-        
-        if (!response.ok) {
-          throw new Error(data.error || 'プロフィール取得に失敗しました');
-        }
         
         // ユーザー情報を更新
         this.user = data;
@@ -239,7 +199,17 @@ export const useAuthStore = defineStore('auth', {
         
         return true;
       } catch (err) {
-        this.error = err.message;
+        // 401エラーの場合はリフレッシュを試みる
+        if (err.statusCode === 401) {
+          const refreshed = await this.refreshAccessToken();
+          if (refreshed) {
+            return await this.fetchUserProfile(); // 再帰的に再試行
+          } else {
+            this.error = '認証の有効期限が切れました。再度ログインしてください。';
+          }
+        } else {
+          this.error = err.message || 'プロフィール取得に失敗しました';
+        }
         return false;
       } finally {
         this.loading = false;
